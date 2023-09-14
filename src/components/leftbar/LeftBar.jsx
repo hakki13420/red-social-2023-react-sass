@@ -14,6 +14,7 @@ import i13 from '../../assets/13.png'
 import LeftBarMenuItem from './LeftBarMenuItem'
 import { authContext } from '../../context/authContext'
 import { useContext } from 'react'
+import Avatar from '../avatar/Avatar'
 
 const LeftBar = () => {
   const { currentUser } = useContext(authContext)
@@ -22,8 +23,9 @@ const LeftBar = () => {
       <div className="container">
         <div className="menu">
           <div className="item">
-            <img src={currentUser.profilePicture} alt="user-avatar" />
-            <span>{currentUser.userName}</span>
+            {/* <img src={currentUser.profilePicture} alt="user-avatar" />
+            <span>{currentUser.username}</span> */}
+            <Avatar image={currentUser.profilePicture} username={currentUser.username}/>
           </div>
           <LeftBarMenuItem image={i1} title='Friends' />
           <LeftBarMenuItem image={i2} title='Groups' />

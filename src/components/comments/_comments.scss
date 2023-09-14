@@ -16,8 +16,12 @@
                 height: 2.5rem;
                 border-radius: 50%;
             }
-            input{
+            form{
+                display: flex;
                 flex: 5;
+                input{
+                flex: 5;
+
                 border: 1px solid themed('border');
                 padding: 10px;
                 border-radius: 4px;
@@ -35,6 +39,7 @@
                 color: white;
                 cursor: pointer;
             }
+        }
         }
         .comment{
             display: flex;

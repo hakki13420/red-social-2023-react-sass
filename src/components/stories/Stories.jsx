@@ -1,7 +1,9 @@
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 import { authContext } from '../../context/authContext'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { privateRequest } from '../../axiosRequest'
 
-const storiesData = [
+/* const storiesData = [
   {
     id: 1,
     name: 'Hakki Rabah',
@@ -24,20 +26,69 @@ const storiesData = [
   }
 
 ]
+ */
 const Stories = () => {
   const { currentUser } = useContext(authContext)
+  const [file, setFile] = useState(null)
+
+  const { isLoading, data: stories } = useQuery(['stories'], async () => {
+    const res = await privateRequest.get('stories')
+    return res.data
+  })
+
+  const queryClient = useQueryClient()
+  const mutation = useMutation(
+    newStory => privateRequest.post('stories', newStory),
+    {
+      onSuccess: () => queryClient.invalidateQueries('stories')
+    }
+  )
+
+  const uploadFile = async () => {
+    const formData = new FormData()
+    formData.append('file', file)
+    try {
+      const res = await privateRequest.post('upload', formData)
+      return res.data
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const addStory = async () => {
+    const urlStory = await uploadFile()
+    mutation.mutate({
+      storyPicture: urlStory
+    })
+  }
+
+  if (isLoading) return 'loading...'
+  if (!stories.length) {
+    return (<div className='stories'>
+      <div className="story">
+        <img src={'/public/uploads/' + currentUser.profilePicture} alt="image-story" />
+        <span>{ currentUser.username}</span>
+        <button title='add a story' style={{ left: '1rem' }} onClick={addStory}>
+          <label htmlFor="story">
+            +
+          </label>
+        </button>
+        <input type="file" id='story' onChange={(e) => { setFile(e.target.files[0]) }} style={{ display: 'none' }} />
+      </div>
+    </div>)
+  }
   return (
     <div className="stories">
       <div className="story">
-        <img src={currentUser.profilePicture} alt="image-story" />
-        <span>{currentUser.userName}</span>
-        <button>+</button>
+        <img src={'/public/uploads/' + currentUser.profilePicture} alt="image-story" />
+        <span>{ currentUser.username}</span>
+        <button title='add a story'>+</button>
       </div>
       {
-        storiesData.map(str => (
+        stories?.map(str => (
           <div className='story' key={str.id}>
-            <img src={str.image} alt="image-story" />
-            <span>Jhon Doe</span>
+            <img src={'/public/uploads/' + str.storyPicture} alt="image-story" />
+            <span>{str.username}</span>
           </div>
         ))
       }

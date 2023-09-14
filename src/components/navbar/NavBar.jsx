@@ -3,17 +3,17 @@ import {
   HomeOutlined,
   DarkModeOutlined,
   GridViewOutlined,
-  Person2Outlined,
   EmailOutlined,
   NotificationsNoneOutlined,
   LightModeOutlined
 } from '@mui/icons-material'
 import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined'
-
+import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined'
 import { useContext, useState } from 'react'
 import { themeContext } from '../../context/themeContext'
 import { authContext } from '../../context/authContext'
 import { Link } from 'react-router-dom'
+import Avatar from '../avatar/Avatar'
 
 const NavBar = () => {
   const { theme, toggleTheme } = useContext(themeContext)
@@ -34,7 +34,9 @@ const NavBar = () => {
             <span>HakkiMedia</span>
           </Link>
         </div>
-        <HomeOutlined className='icon'/>
+        <Link to='/'>
+          <HomeOutlined className='icon'/>
+        </Link>
         {theme === 'light' && <DarkModeOutlined onClick={changeTheme} />}
         {theme === 'dark' && <LightModeOutlined onClick={changeTheme}/>}
         <GridViewOutlined className='icon'/>
@@ -53,12 +55,15 @@ const NavBar = () => {
         <MenuOutlinedIcon className='menu-icon' onClick={() => setOpenMenu(!openMenu)}/>
       </div>
       <div className="right">
-        <Person2Outlined/>
         <EmailOutlined/>
         <NotificationsNoneOutlined />
         <div className="user-container">
-          <img src={currentUser.profilePicture} alt="user-avatar" />
-          <span>{currentUser.userName}</span>
+          {/* {currentUser.profilePicture
+            ? <img src={'/public/uploads/' + currentUser.profilePicture} alt="user-avatar" onClick={() => setOpenMenu(!openMenu)} />
+            : <PersonOutlineOutlinedIcon/>
+          }
+          <span>{currentUser.username}</span> */}
+          <Avatar openMenu={openMenu} setOpenMenu={setOpenMenu} image={currentUser.profilePicture} username={currentUser.username}/>
         </div>
       </div>
 

@@ -8,31 +8,87 @@ import LanguageIcon from '@mui/icons-material/Language'
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import Posts from '../../components/posts/Posts'
+import { useParams } from 'react-router-dom'
+import { privateRequest } from '../../axiosRequest'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useContext, useState } from 'react'
+import { authContext } from '../../context/authContext'
+import UpdateProfile from '../../components/updateProfile/UpdateProfile'
+import NoImage from '../../components/NoImage/NoImage'
 
 const Profile = () => {
+  const { id } = useParams()
+  const { currentUser } = useContext(authContext)
+  const [openUpdate, setOpenUpdate] = useState(false)
+
+  const { isLoading, error, data: user } = useQuery(['user'], async () => {
+    const res = await privateRequest.get('users/' + id)
+    return res.data
+  })
+
+  const { isloading: relationIsLoading, data: relationShips } = useQuery(['relationShips'], async () => {
+    const res = await privateRequest.get('relationShips?followedId=' + id)
+    return res.data
+  })
+
+  const queryClient = useQueryClient()
+  const mutation = useMutation(
+    followed =>
+      followed
+        ? privateRequest.delete('relationShips?followedId=' + id)
+        : privateRequest.post('relationShips', { followed: id }),
+
+    {
+      onSuccess: () => queryClient.invalidateQueries('relationShips')
+    }
+  )
+  const follow = () => {
+    mutation.mutate(relationShips.some(el => el.follower === currentUser.id))
+  }
+
+  if (isLoading) return 'loading...'
   return (
     <div className="profile">
       <div className="container">
-
         <div className="images">
-          <img src="https://images.pexels.com/photos/1659438/pexels-photo-1659438.jpeg?auto=compress&cs=tinysrgb&w=600" className ='image-cover' alt="image-cover" />
-          <img src="https://images.pexels.com/photos/678783/pexels-photo-678783.jpeg?auto=compress&cs=tinysrgb&w=600" className ='image-profile' alt="image-profile" />
+          {
+            user.coverPicture
+              ? <img src={'/public/uploads/' + user.coverPicture} className ='image-cover' alt="image-cover" />
+              : <NoImage/>
+          }
+          <div className="container-profile">
+            {
+              user.profilePicture
+                ? <img src={'/public/uploads/' + user.profilePicture} className ='image-profile' alt="image-profile" />
+                : <NoImage className ='image-profile'/>
+            }
+          </div>
         </div>
         <div className="profile-container">
 
           <div className="top">
             <span className='name'>
-            Jhon Doe
+              {user.name}
             </span>
             <div className="info">
               <div className="location">
                 <PlaceIcon/>
-                <span>Algeria</span>
+                <span>{user.country}</span>
               </div>
-              <button>Follow</button>
+              {currentUser.id === user.id && <button onClick={() => setOpenUpdate(true)}>Update</button>}
+              {
+                relationIsLoading
+                  ? 'loading...'
+                  : currentUser.id !== user.id && relationShips?.every(el => el.follower !== currentUser.id)
+                    ? <button onClick={follow}>Follow</button>
+                    : currentUser.id !== user.id && relationShips?.some(el => el.follower === currentUser.id)
+                      ? <button onClick={follow}>Following</button>
+                      : ''
+              }
+
               <div className="contact">
                 <LanguageIcon/>
-                <span>Hakki.dev</span>
+                <span>{user.webSite}</span>
 
               </div>
             </div>
@@ -54,9 +110,9 @@ const Profile = () => {
           </div>
         </div>
 
-        <Posts />
+        <Posts userId={id}/>
       </div>
-
+      {openUpdate && <UpdateProfile user={user} setOpenUpdate={setOpenUpdate}/>}
     </div>
   )
 }

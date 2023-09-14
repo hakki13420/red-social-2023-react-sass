@@ -1,17 +1,41 @@
+import { useContext } from 'react'
+import { privateRequest } from '../../axiosRequest'
 import LatestActivity from './LatestActivity'
 import OnlineFriends from './OnlineFriends'
 import Suggestion from './Suggestion'
+import { authContext } from '../../context/authContext'
+import { useQuery } from '@tanstack/react-query'
+const i = 'https://images.pexels.com/photos/1181424/pexels-photo-1181424.jpeg?auto=compress&cs=tinysrgb&w=600'
 
 const RightBar = () => {
-  const i = 'https://images.pexels.com/photos/1181424/pexels-photo-1181424.jpeg?auto=compress&cs=tinysrgb&w=600'
+  const { currentUser } = useContext(authContext)
+
+  const { isLoading, data: friends } = useQuery(['onlineFriends'], async () => {
+    const res = await privateRequest('users?friends=' + currentUser.id)
+    return res.data
+  })
+
+  const { isLoading: suggIsLoading, data: suggestions } = useQuery(['suggestions'], async () => {
+    const res = await privateRequest('users?suggestion=' + currentUser.id)
+    return res.data
+  })
+
   return (
     <div className="rightbar">
       <div className="container">
         <div className="item">
           <h1>Suggesyio for you</h1>
-          <Suggestion name='Jhon Doe' image={i}/>
-          <Suggestion name='Jhon Doe' image={i}/>
-          <Suggestion name='Jhon Doe' image={i}/>
+          {
+            suggIsLoading
+              ? 'loading...'
+              : (
+                <>
+                  {
+                    suggestions?.map(suggestion => <Suggestion key={suggestion.id} suggestion={suggestion}/>)
+                  }
+                </>
+              )
+          }
         </div>
         <div className="item">
           <h1>Latest Activities</h1>
@@ -21,9 +45,15 @@ const RightBar = () => {
         </div>
         <div className="item">
           <h1>Online Friends</h1>
-          <OnlineFriends name='Jhon Doe' image={i} />
-          <OnlineFriends name='Jhon Doe' image={i} />
-          <OnlineFriends name='Jhon Doe' image={i} />
+          {
+            isLoading
+              ? 'loading...'
+              : (
+                <>
+                  {friends?.map(friend => <OnlineFriends key={friend.id} friend={friend} />)}
+                </>
+              )
+          }
         </div>
       </div>
     </div>

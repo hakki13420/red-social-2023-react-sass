@@ -10,6 +10,8 @@ import { themeContext } from './context/themeContext'
 import { useContext } from 'react'
 import { authContext } from './context/authContext'
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import Routes from './routes/routes'
 const Layout = () => {
   const { theme } = useContext(themeContext)
 
@@ -41,7 +43,7 @@ function App () {
           element: <Home/>
         },
         {
-          path: '/profile',
+          path: '/profile:id',
           element: <Profile/>
         }
       ]
@@ -56,8 +58,12 @@ function App () {
     }
 
   ])
+
+  const queryClient = new QueryClient()
   return (
-    <RouterProvider router={router} />
+    <QueryClientProvider client={queryClient}>
+      <Routes />
+    </QueryClientProvider>
   )
 }
 

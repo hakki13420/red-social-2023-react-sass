@@ -1,4 +1,5 @@
 import { createContext, useEffect, useState } from 'react'
+import { privateRequest } from '../axiosRequest'
 
 export const authContext = createContext()
 
@@ -11,16 +12,18 @@ export const AuthContextProvider = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(currentUser))
   }, [currentUser])
 
-  const login = () => {
+  const login = async (inputs) => {
     // connect to backend
-    setCurrentUser({
-      id: 1,
-      userName: 'Jhon Doe',
-      profilePicture: 'https://images.pexels.com/photos/1181424/pexels-photo-1181424.jpeg?auto=compress&cs=tinysrgb&w=600'
-    })
+    console.log(inputs)
+    const { data } = await privateRequest.post('auth/login',
+      inputs
+    )
+    console.log('data auth', data)
+    setCurrentUser(data)
   }
   const logout = () => {
     // connect to backend
+
     setCurrentUser(null)
     window.localStorage.clear('user')
   }

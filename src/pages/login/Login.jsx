@@ -1,12 +1,40 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { authContext } from '../../context/authContext'
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
+import Notification from '../../components/notification/Notification'
 
 const Login = () => {
   const { login } = useContext(authContext)
-  const authenticate = () => {
-    login()
+  const [inputs, setInputs] = useState({
+    username: '',
+    password: ''
+  })
+  const [errors, setErrors] = useState(null)
+
+  const navigate = useNavigate()
+
+  const authenticate = async (e) => {
+    e.preventDefault()
+    try {
+      await login(inputs)
+      navigate('/')
+    } catch (error) {
+      console.log('errorrrrrr ==', error)
+      setErrors({ message: error.response.data, type: 'error' })
+    }
   }
+
+  const handlChange = (e) => {
+    setInputs({
+      ...inputs,
+      [e.target.name]: e.target.value
+    })
+  }
+
+  errors && setTimeout(() => {
+    setErrors(null)
+  }, 4000)
+
   return (
     <div className="login">
       <div className="card">
@@ -21,9 +49,10 @@ const Login = () => {
         </div>
         <div className="right">
           <h1>Login</h1>
+          {errors && <Notification {...errors} />}
           <form action="#">
-            <input type="email" placeholder="Email" />
-            <input type="password" placeholder="Password" />
+            <input type="text" placeholder="username" name='username' onChange={handlChange} />
+            <input type="password" placeholder="Password" name='password' onChange={handlChange} />
             <button onClick={authenticate}>Login</button>
           </form>
         </div>

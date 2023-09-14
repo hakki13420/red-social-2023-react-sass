@@ -1,6 +1,9 @@
 import Post from '../post/Post'
+import { privateRequest } from '../../axiosRequest'
+import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 
-const postsData = [
+/* const postsData = [
   {
     id: 1,
     userName: 'Jhon Doe',
@@ -33,14 +36,38 @@ const postsData = [
     content: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Expedita quasi nesciunt, dignissimos et eius amet? Ipsum quod corrupti veniam doloribus ex quidem animi vitae possimus illo delectus voluptates pariatur dignissimos porro itaque corporis, est, consequuntur blanditiis maxime non eos dicta? Distinctio repellat animi laborum nobis. Delectus aliquid minus recusandae rerum?',
     image: 'https://images.pexels.com/photos/18018814/pexels-photo-18018814/free-photo-of-monument-parc-voyager-fleur.jpeg?auto=compress&cs=tinysrgb&w=600'
   }
-]
+] */
 
-const Posts = () => {
+const Posts = ({ userId }) => {
+  /* useEffect(() => {
+    const getData = async () => {
+      try {
+        const { data } = privateRequest.get('posts')
+        setPostsData(data)
+      } catch (error) {
+        console.timeLog(error)
+      }
+    }
+    getData()
+  }, [])
+ */
+  console.log('props userId', userId)
+  const { isLoading, error, data } = useQuery(['posts', userId], () => {
+    return privateRequest.get('posts?user=' + userId)
+      .then(res => res.data)
+      .catch(err => {
+        if (err.response.status === 401) {
+          localStorage.removeItem('user')
+        }
+      })
+  })
+  if (isLoading) return '...loading'
+  if (error) return 'error'
   return (
     <div className="posts">
 
       {
-        postsData.map(post => (
+        data?.map(post => (
           <Post key={post.id} post={post}/>
         ))
       }
